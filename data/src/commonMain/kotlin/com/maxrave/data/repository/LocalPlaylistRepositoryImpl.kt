@@ -72,6 +72,31 @@ internal class LocalPlaylistRepositoryImpl(
             emit(list)
         }.flowOn(Dispatchers.IO)
 
+    override fun observeLocalPlaylistsForSync() = localDataSource.observeLocalPlaylistsForSync()
+
+    override fun observeLocalPlaylistEntriesForSync() = localDataSource.observeLocalPlaylistEntriesForSync()
+
+    override suspend fun insertLocalPlaylistForSync(localPlaylist: LocalPlaylistEntity) =
+        withContext(Dispatchers.IO) { localDataSource.insertLocalPlaylist(localPlaylist) }
+
+    override suspend fun updateLocalPlaylistForSync(
+        id: Long,
+        title: String,
+        thumbnail: String?,
+    ) = withContext(Dispatchers.IO) {
+        localDataSource.updateLocalPlaylistMetadataForSync(id, title, thumbnail)
+    }
+
+    override suspend fun replaceLocalPlaylistEntriesForSync(
+        id: Long,
+        videoIds: List<String>,
+    ) = withContext(Dispatchers.IO) {
+        localDataSource.replaceLocalPlaylistEntriesForSync(id, videoIds)
+    }
+
+    override suspend fun deleteLocalPlaylistForSync(id: Long) =
+        withContext(Dispatchers.IO) { localDataSource.deleteLocalPlaylist(id) }
+
     override suspend fun updateLocalPlaylistTracks(
         tracks: List<String>,
         id: Long,

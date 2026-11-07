@@ -15,6 +15,8 @@ import kotlinx.datetime.LocalDateTime
 interface PlaylistRepository {
     fun getAllPlaylists(limit: Int): Flow<List<PlaylistEntity>>
 
+    fun observePlaylistsForSync(): Flow<List<PlaylistEntity>>
+
     fun getPlaylist(id: String): Flow<PlaylistEntity?>
 
     fun getLikedPlaylists(): Flow<List<PlaylistEntity>>
@@ -22,6 +24,9 @@ interface PlaylistRepository {
     suspend fun insertPlaylist(playlistEntity: PlaylistEntity)
 
     suspend fun insertAndReplacePlaylist(playlistEntity: PlaylistEntity)
+
+    /** Local LAN-sync metadata write; never calls YouTube. */
+    suspend fun insertOrReplacePlaylistForSync(playlistEntity: PlaylistEntity)
 
     suspend fun insertRadioPlaylist(playlistEntity: PlaylistEntity)
 

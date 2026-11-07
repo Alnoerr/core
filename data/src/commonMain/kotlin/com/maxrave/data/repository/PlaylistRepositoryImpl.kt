@@ -56,6 +56,9 @@ internal class PlaylistRepositoryImpl(
             emit(localDataSource.getAllPlaylists(limit))
         }.flowOn(Dispatchers.IO)
 
+    override fun observePlaylistsForSync(): Flow<List<PlaylistEntity>> =
+        localDataSource.observePlaylistsForSync().flowOn(Dispatchers.IO)
+
     override fun getPlaylist(id: String): Flow<PlaylistEntity?> =
         flow {
             emit(localDataSource.getPlaylist(id))
@@ -72,6 +75,11 @@ internal class PlaylistRepositoryImpl(
 
     override suspend fun insertPlaylist(playlistEntity: PlaylistEntity) =
         withContext(Dispatchers.IO) { localDataSource.insertPlaylist(playlistEntity) }
+
+    override suspend fun insertOrReplacePlaylistForSync(playlistEntity: PlaylistEntity) =
+        withContext(Dispatchers.IO) {
+            localDataSource.insertAndReplacePlaylist(playlistEntity)
+        }
 
     override suspend fun insertAndReplacePlaylist(playlistEntity: PlaylistEntity) =
         withContext(Dispatchers.IO) {

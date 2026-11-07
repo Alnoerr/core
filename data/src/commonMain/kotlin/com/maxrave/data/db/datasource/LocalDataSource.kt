@@ -67,6 +67,8 @@ internal class LocalDataSource(
 
     suspend fun getAllSongs(limit: Int) = databaseDao.getAllSongs(limit)
 
+    fun observeSongsForSync() = databaseDao.observeSongsForSync()
+
     suspend fun getSongByListVideoId(
         primaryKeyList: List<String>,
         offset: Int,
@@ -367,6 +369,8 @@ internal class LocalDataSource(
 
     suspend fun getAllPlaylists(limit: Int) = databaseDao.getAllPlaylists(limit)
 
+    fun observePlaylistsForSync() = databaseDao.observePlaylistsForSync()
+
     suspend fun insertPlaylist(playlist: PlaylistEntity) = databaseDao.insertPlaylist(playlist)
 
     suspend fun insertAndReplacePlaylist(playlist: PlaylistEntity) = databaseDao.insertAndReplacePlaylist(playlist)
@@ -416,6 +420,10 @@ internal class LocalDataSource(
 
     suspend fun getLocalPlaylist(id: Long) = databaseDao.getLocalPlaylist(id)
 
+    fun observeLocalPlaylistsForSync() = databaseDao.observeLocalPlaylistsForSync()
+
+    fun observeLocalPlaylistEntriesForSync() = databaseDao.observeLocalPlaylistEntriesForSync()
+
     suspend fun insertLocalPlaylist(localPlaylist: LocalPlaylistEntity) = databaseDao.insertLocalPlaylist(localPlaylist)
 
     suspend fun insertLocalPlaylistWithTracks(
@@ -431,9 +439,20 @@ internal class LocalDataSource(
     ) = databaseDao.updateLocalPlaylistTitle(title, id)
 
     suspend fun updateLocalPlaylistThumbnail(
-        thumbnail: String,
+        thumbnail: String?,
         id: Long,
     ) = databaseDao.updateLocalPlaylistThumbnail(thumbnail, id)
+
+    suspend fun updateLocalPlaylistMetadataForSync(
+        id: Long,
+        title: String,
+        thumbnail: String?,
+    ) = databaseDao.updateLocalPlaylistMetadataForSync(id, title, thumbnail)
+
+    suspend fun replaceLocalPlaylistEntriesForSync(
+        id: Long,
+        videoIds: List<String>,
+    ) = databaseDao.replaceLocalPlaylistEntriesForSync(id, videoIds)
 
     suspend fun updateLocalPlaylistTracks(
         tracks: List<String>,
