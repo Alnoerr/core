@@ -16,6 +16,15 @@ import kotlinx.datetime.LocalDateTime
 interface SongRepository {
     fun getAllSongs(limit: Int): Flow<List<SongEntity>>
 
+    /**
+     * Every song row, including rows whose local SimpMusic favorite was removed.
+     *
+     * Synchronizers must observe this rather than treating the filtered liked-songs query as a
+     * deletion stream: a row disappearing from a filtered query is not, by itself, durable delete
+     * intent.
+     */
+    fun observeSongsForSync(): Flow<List<SongEntity>>
+
     suspend fun setInLibrary(
         videoId: String,
         inLibrary: LocalDateTime,
@@ -100,6 +109,12 @@ interface SongRepository {
     suspend fun updateLikeStatus(
         videoId: String,
         likeStatus: Int,
+    )
+
+    /** Updates only the local SimpMusic favorite flag; it never queues downloads or calls YouTube. */
+    suspend fun applyLocalLikeStatus(
+        videoId: String,
+        liked: Boolean,
     )
 
     fun updateSongInLibrary(

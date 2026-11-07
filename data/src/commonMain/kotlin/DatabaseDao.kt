@@ -223,6 +223,9 @@ interface DatabaseDao {
     @Query("SELECT * FROM song ORDER BY inLibrary DESC LIMIT :limit OFFSET 0")
     suspend fun getAllSongs(limit: Int): List<SongEntity>
 
+    @Query("SELECT * FROM song ORDER BY inLibrary DESC")
+    fun observeSongsForSync(): Flow<List<SongEntity>>
+
     @Query("SELECT * FROM song WHERE liked = 1 ORDER BY favoriteAt DESC LIMIT :limit OFFSET :offset")
     suspend fun getLikedSongs(
         limit: Int,
@@ -578,6 +581,9 @@ interface DatabaseDao {
     @Query("SELECT * FROM playlist ORDER BY inLibrary DESC LIMIT :limit OFFSET 0")
     suspend fun getAllPlaylists(limit: Int): List<PlaylistEntity>
 
+    @Query("SELECT * FROM playlist ORDER BY id")
+    fun observePlaylistsForSync(): Flow<List<PlaylistEntity>>
+
     @Query("SELECT * FROM playlist WHERE id = :playlistId")
     suspend fun getPlaylist(playlistId: String): PlaylistEntity?
 
@@ -634,6 +640,9 @@ interface DatabaseDao {
         limit: Int,
         offset: Int,
     ): List<LocalPlaylistEntity>
+
+    @Query("SELECT * FROM local_playlist ORDER BY id")
+    fun observeLocalPlaylistsForSync(): Flow<List<LocalPlaylistEntity>>
 
     @Query("SELECT * FROM local_playlist WHERE downloadState = 1 OR downloadState = 2 LIMIT :limit OFFSET :offset")
     suspend fun getAllDownloadingLocalPlaylists(
@@ -700,8 +709,15 @@ interface DatabaseDao {
 
     @Query("UPDATE local_playlist SET thumbnail = :thumbnail WHERE id = :id")
     suspend fun updateLocalPlaylistThumbnail(
-        thumbnail: String,
+        thumbnail: String?,
         id: Long,
+    )
+
+    @Query("UPDATE local_playlist SET title = :title, thumbnail = :thumbnail WHERE id = :id")
+    suspend fun updateLocalPlaylistMetadataForSync(
+        id: Long,
+        title: String,
+        thumbnail: String?,
     )
 
     @Query("UPDATE local_playlist SET inLibrary = :inLibrary WHERE id = :id")
@@ -913,9 +929,35 @@ interface DatabaseDao {
     )
 
     @Query(
-        "SELECT * FROM pair_song_local_playlist WHERE playlistId = :playlistId ORDER BY position ASC",
+        "SELECT * FROM pair_song_local_playlist WHERE playlistId = :playlistId ORDER BY position ASC, id ASC",
     )
     suspend fun getAllPlaylistPairSongByPosition(playlistId: Long): List<PairSongLocalPlaylist>
+
+    @Query("SELECT * FROM pair_song_local_playlist ORDER BY playlistId, position, id")
+    fun observeLocalPlaylistEntriesForSync(): Flow<List<PairSongLocalPlaylist>>
+
+    @Query("DELETE FROM pair_song_local_playlist WHERE playlistId = :playlistId")
+    suspend fun deleteAllLocalPlaylistEntries(playlistId: Long)
+
+    @Transaction
+    suspend fun replaceLocalPlaylistEntriesForSync(
+        playlistId: Long,
+        videoIds: List<String>,
+    ) {
+        deleteAllLocalPlaylistEntries(playlistId)
+        val addedAt = now()
+        videoIds.forEachIndexed { position, videoId ->
+            insertPairSongLocalPlaylist(
+                PairSongLocalPlaylist(
+                    playlistId = playlistId,
+                    songId = videoId,
+                    position = position,
+                    inPlaylist = addedAt,
+                ),
+            )
+        }
+        updateLocalPlaylistTracks(videoIds, playlistId)
+    }
 
     @Query(
         "UPDATE pair_song_local_playlist SET position = position + 1 WHERE playlistId = :playlistId AND position >= :from AND position < :to",

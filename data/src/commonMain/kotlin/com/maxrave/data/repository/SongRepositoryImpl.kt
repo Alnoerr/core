@@ -68,6 +68,9 @@ internal class SongRepositoryImpl(
             emit(localDataSource.getAllSongs(limit))
         }.flowOn(Dispatchers.IO)
 
+    override fun observeSongsForSync(): Flow<List<SongEntity>> =
+        localDataSource.observeSongsForSync().flowOn(Dispatchers.IO)
+
     override suspend fun setInLibrary(
         videoId: String,
         inLibrary: LocalDateTime,
@@ -359,6 +362,15 @@ internal class SongRepositoryImpl(
 //                }
 //            }
 //        }
+    }
+
+    override suspend fun applyLocalLikeStatus(
+        videoId: String,
+        liked: Boolean,
+    ) = withContext(Dispatchers.IO) {
+        // This is deliberately separate from updateLikeStatus(): remote synchronization must not
+        // trigger the user's auto-download preference or any YouTube-side mutation.
+        localDataSource.updateLiked(if (liked) 1 else 0, videoId)
     }
 
     override fun updateSongInLibrary(

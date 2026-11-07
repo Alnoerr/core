@@ -82,12 +82,7 @@ kotlin {
                 implementation(projects.discord)
                 implementation(projects.listenTogether)
 
-                // Last.fm (gated: real scrobbler for full builds, no-op stub for FOSS builds)
-                if (isFullBuild) {
-                    implementation(projects.lastfm)
-                } else {
-                    implementation(projects.lastfmEmpty)
-                }
+                implementation(projects.lastfm)
 
                 implementation(libs.kotlin.stdlib)
                 // Add KMP dependencies here

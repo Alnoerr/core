@@ -17,6 +17,25 @@ interface LocalPlaylistRepository {
 
     fun getAllLocalPlaylists(): Flow<List<LocalPlaylistEntity>>
 
+    fun observeLocalPlaylistsForSync(): Flow<List<LocalPlaylistEntity>>
+
+    fun observeLocalPlaylistEntriesForSync(): Flow<List<PairSongLocalPlaylist>>
+
+    suspend fun insertLocalPlaylistForSync(localPlaylist: LocalPlaylistEntity): Long
+
+    suspend fun updateLocalPlaylistForSync(
+        id: Long,
+        title: String,
+        thumbnail: String?,
+    )
+
+    suspend fun replaceLocalPlaylistEntriesForSync(
+        id: Long,
+        videoIds: List<String>,
+    )
+
+    suspend fun deleteLocalPlaylistForSync(id: Long)
+
     suspend fun updateLocalPlaylistTracks(
         tracks: List<String>,
         id: Long,
